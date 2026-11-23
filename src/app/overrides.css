@@ -1,0 +1,3 @@
+.hero-content{position:absolute;top:0;bottom:0}
+html[dir="rtl"] .hero-content{inset-inline-end:0}
+html[dir="ltr"] .hero-content{inset-inline-start:0}

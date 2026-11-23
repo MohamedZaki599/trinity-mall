@@ -1,69 +1,25 @@
+"use client";
+
 import Image from "next/image";
+import Link from "next/link";
+import { EnquiryForm } from "@/components/enquiry-form";
+import { Reveal } from "@/components/reveal";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { useLanguage } from "@/components/language-provider";
+
+const routes = [
+  { id: "01", icon: "⌁", href: "/units", ar: ["امتلك مساحة", "تجارية أو إدارية"], en: ["Own the right", "commercial space"], bodyAr: "مسار واضح للمستثمر وصاحب النشاط، من الاهتمام إلى زيارة مؤهلة.", bodyEn: "A clear route for investors and business owners, from interest to a qualified visit." },
+  { id: "02", icon: "↗", href: "/units", ar: ["استأجر مساحة", "تلائم نشاطك"], en: ["Lease a space", "that fits your business"], bodyAr: "ابدأ بطبيعة نشاطك واحتياجك، ثم راجع المعلومات المعتمدة مع الفريق.", bodyEn: "Start with your business needs, then review approved information with the team." },
+  { id: "03", icon: "◒", href: "/corporate-partners", ar: ["وسّع حضور", "شركتك"], en: ["Grow your", "company presence"], bodyAr: "مسار B2B مخصص للبنوك والمشغلين والعلامات التجارية المناسبة.", bodyEn: "A dedicated B2B route for banks, operators and fitting commercial brands." },
+];
 
 export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+  const { tr, isArabic } = useLanguage();
+  return <><SiteHeader /><main className="home-main"><section className="hero-v2"><div className="hero-orbit orbit-one" /><div className="hero-orbit orbit-two" /><div className="hero-media"><Image src="/assets/hero-trinity-mall-v2.png" alt={tr("تصوّر معماري خارجي لمول ترينيتي", "Exterior architectural visualization of Trinity Mall")} fill priority sizes="100vw" /><div className="hero-shade" /></div><div className="hero-content"><Reveal><p className="kicker"><span /> {tr("منظومة رقمية للبيع والتأجير والشراكات", "Digital sales, leasing & partnership experience")}</p></Reveal><Reveal delay={100}><h1>{tr("كل فرصة تبدأ\nبالمساحة المناسبة.", "The right space\nstarts the right move.")}</h1></Reveal><Reveal delay={180}><p className="hero-lead">{tr("تجربة واضحة تساعد المستثمرين وأصحاب الأنشطة والشركات على اكتشاف المسار المناسب لهم في Trinity Mall.", "A clear experience helping investors, operators and companies discover the right Trinity Mall path.")}</p></Reveal><Reveal delay={240}><div className="hero-actions"><Link className="button button-gold" href="#opportunities">{tr("اكتشف الفرص", "Discover opportunities")} <span>↓</span></Link><Link className="text-cta" href="/corporate-partners">{tr("شراكات الشركات", "Corporate partnerships")} <span>↗</span></Link></div></Reveal><p className="hero-caption">{tr("تصوّر معماري توضيحي — لا يمثل حالة التشغيل أو الإشغال الحالية.", "Architectural visualization — not a representation of current operations or occupancy.")}</p></div><div className="hero-stamp"><span>{tr("ثلاثة", "THREE")}</span><strong>{tr("مسارات\nأعمال", "GROWTH\nPATHS")}</strong></div></section>
+  <section className="proof-strip" aria-label={tr("ملخص المسارات", "Opportunity summary")}><p>{tr("MVP مصمم لتوحيد الرسالة وتحويل الاهتمام إلى خطوة تالية واضحة.", "An MVP built to organise the message and turn interest into a clear next step.")}</p><div><span>{tr("بيع", "SALE")}</span><i /> <span>{tr("تأجير", "LEASE")}</span><i /> <span>{tr("شراكات", "PARTNERSHIPS")}</span></div></section>
+  <section className="opportunity-v2" id="opportunities"><Reveal><div className="section-intro"><p className="kicker">{tr("مسارات منفصلة، رسالة أوضح", "ONE MALL, CLEARER ROUTES")}</p><h2>{tr("مول واحد.\nثلاث فرص نمو.", "One mall.\nThree growth engines.")}</h2><p>{tr("بدل رسالة عامة واحدة، لكل فرصة جمهورها ومسارها ونموذج التأهيل المناسب لها.", "Instead of one generic message, each opportunity has an audience, route and qualifying flow built for it.")}</p></div></Reveal><div className="route-grid">{routes.map((route, index) => <Reveal key={route.id} delay={index * 110}><Link href={route.href} className="route-card"><div className="route-top"><span>{route.id}</span><b>{route.icon}</b></div><h3>{(isArabic ? route.ar : route.en).map((line) => <span key={line}>{line}</span>)}</h3><p>{isArabic ? route.bodyAr : route.bodyEn}</p><div className="route-link">{tr("استكشف المسار", "Explore route")} <span>←</span></div></Link></Reveal>)}</div></section>
+  <section className="story-v2"><Reveal className="story-image"><figure><Image src="/assets/03-rooftop-cafe-visualization.png" alt={tr("تصوّر لمنطقة جلوس وكافيه على الرووف", "Rooftop café seating visualization")} fill sizes="(max-width: 800px) 100vw, 50vw" /><figcaption>{tr("تصوّر لمنطقة الرووف — تفاصيل الجاهزية والتشغيل تحتاج تأكيد الإدارة.", "Rooftop visualization — readiness and operational details need management confirmation.")}</figcaption></figure></Reveal><Reveal delay={150}><div className="story-copy"><p className="kicker">{tr("من الاهتمام إلى خطوة تالية", "FROM INTEREST TO NEXT STEP")}</p><h2>{tr("الموقع ليس مجرد واجهة.\nإنه محرك استقبال ومتابعة.", "Not just a website.\nA demand and follow-up engine.")}</h2><ol><li><b>01</b><span>{tr("مسار مناسب", "Relevant route")}</span><p>{tr("بيع، تأجير، أو شراكة مؤسسية.", "Sale, lease or corporate partnership.")}</p></li><li><b>02</b><span>{tr("طلب مؤهل", "Qualified enquiry")}</span><p>{tr("معلومات كافية لفهم الاحتياج قبل المتابعة.", "Enough detail to understand the requirement before follow-up.")}</p></li><li><b>03</b><span>{tr("لوحة متابعة", "Lead desk")}</span><p>{tr("خطوة تالية واضحة لفريق المبيعات.", "A visible next step for the sales team.")}</p></li></ol><Link href="/admin/leads" className="button button-outline">{tr("شاهد لوحة العملاء — Demo", "See lead desk — Demo")} <span>↗</span></Link></div></Reveal></section>
+  <section className="mvp-banner"><Reveal><p className="kicker">{tr("عرض توضيحي", "LIVE DEMONSTRATION")}</p><h2>{tr("من الاستفسار\nإلى فرصة مؤهلة.", "From enquiry\nto a qualified opportunity.")}</h2><p>{tr("جرّب نموذج الاستعلام المحلي ثم شاهد كيف تظهر البيانات داخل لوحة العملاء التجريبية.", "Try the local enquiry form, then see how the request appears in the demonstration lead desk.")}</p><div className="banner-actions"><Link className="button button-gold" href="/contact">{tr("ابدأ استفسارك", "Start your enquiry")} <span>↗</span></Link><Link href="/admin/leads" className="text-cta">{tr("لوحة العملاء", "Lead desk")} <span>←</span></Link></div></Reveal></section>
+  <section className="home-enquiry"><Reveal><div><p className="kicker">{tr("لنبدأ من احتياجك", "START WITH YOUR NEED")}</p><h2>{tr("اخبرنا بما تبحث عنه.", "Tell us what you are looking for.")}</h2><p>{tr("تُحفظ البيانات محليًا لأغراض هذا النموذج فقط، ولا يتم إرسال أي استفسار لجهة خارجية.", "Details are saved locally for this prototype only; nothing is sent to a third party.")}</p></div></Reveal><Reveal delay={120}><EnquiryForm compact /></Reveal></section></main><SiteFooter /></>;
 }
