@@ -86,6 +86,8 @@ Raw IPs are never stored: only `HMAC-SHA256(IP_HASH_SECRET, ip)`.
 
 ## Deploy (Vercel + Neon)
 
+Full step-by-step runbook in Arabic: [DEPLOYMENT.md](DEPLOYMENT.md).
+
 1. Create a Neon project and copy the pooled and direct URLs.
 2. Add every key from `.env.example` in Vercel for Production, Preview and Development.
 3. Run `npm run db:migrate` against the production direct URL.
