@@ -1,8 +1,230 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { deleteLead, removeDemoLeads } from "@/app/actions/admin";
+import { logout } from "@/app/admin/login/actions";
+import { StatusSelect } from "@/components/admin/status-select";
 import { useLanguage } from "@/components/language-provider";
-type Lead = { id: string; name: string; phone: string; category: string; business?: string; area?: string; source?: string; status: string; createdAt: string; isDemo: boolean };
-const statuses = ["New", "Contacted", "Visit Scheduled", "Negotiation", "Closed / Not Proceeding"];
-const seed: Lead[] = [{ id: "demo-01", name: "Nour Retail (demo)", phone: "01000000001", category: "lease", business: "Retail", area: "120", source: "Campaign landing page", status: "New", createdAt: "2026-11-12", isDemo: true }, { id: "demo-02", name: "Alfa Group (demo)", phone: "01000000002", category: "corporate", business: "Branch expansion", area: "250", source: "B2B outreach", status: "Contacted", createdAt: "2026-11-11", isDemo: true }, { id: "demo-03", name: "Mona Office (demo)", phone: "01000000003", category: "buy", business: "Professional services", area: "150", source: "Website", status: "Visit Scheduled", createdAt: "2026-11-10", isDemo: true }];
-export function LeadDashboard() { const { tr } = useLanguage(); const [leads, setLeads] = useState<Lead[]>(seed); const [filter, setFilter] = useState("All"); useEffect(() => { const timer = window.setTimeout(() => { const stored = JSON.parse(localStorage.getItem("trinity-leads") || "null"); const enquiries = JSON.parse(localStorage.getItem("trinity-enquiries") || "[]"); setLeads(stored || [...enquiries, ...seed]); }, 0); return () => window.clearTimeout(timer); }, []); function update(id: string, status: string) { const next = leads.map((lead) => lead.id === id ? { ...lead, status } : lead); setLeads(next); localStorage.setItem("trinity-leads", JSON.stringify(next)); } const shown = useMemo(() => leads.filter((lead) => filter === "All" || lead.status === filter), [leads, filter]); const text = (status: string) => ({ New: tr("جديد", "New"), Contacted: tr("تم التواصل", "Contacted"), "Visit Scheduled": tr("زيارة محددة", "Visit scheduled"), Negotiation: tr("تفاوض", "Negotiation"), "Closed / Not Proceeding": tr("مغلق", "Closed") }[status] || status); return <><section className="dashboard-hero"><div><p className="kicker">CRM DEMONSTRATION</p><h1>{tr("لوحة متابعة\nالعملاء المحتملين.", "A clearer view\nof every next step.")}</h1><p>{tr("واجهة توضيحية محلية، وليست نظامًا مؤمنًا أو قاعدة بيانات إنتاجية.", "A local demonstration interface, not a secured system or production database.")}</p></div><div className="lead-meter"><span>{leads.length}</span><p>{tr("إجمالي العملاء\nداخل النموذج", "total leads\nin the demo")}</p></div></section><div className="funnel"><div className="funnel-line" />{statuses.slice(0, 4).map((status) => <div key={status}><b>{leads.filter((lead) => lead.status === status).length}</b><span>{text(status)}</span></div>)}</div><div className="lead-toolbar"><label>{tr("تصفية حسب الحالة", "Filter by status")}<select value={filter} onChange={(e) => setFilter(e.target.value)}><option>All</option>{statuses.map((status) => <option key={status} value={status}>{text(status)}</option>)}</select></label><p><i />{tr("بيانات افتراضية + استفسارات تجريبية محفوظة محليًا", "fictional seed data + locally saved demo enquiries")}</p></div><div className="lead-table-wrap"><table><thead><tr><th>{tr("العميل", "Lead")}</th><th>{tr("الاهتمام", "Interest")}</th><th>{tr("المصدر", "Source")}</th><th>{tr("الخطوة التالية", "Next step")}</th></tr></thead><tbody>{shown.map((lead) => <tr key={lead.id}><td><strong>{lead.name}</strong><span>{lead.phone}</span></td><td><b>{lead.category}</b><span>{lead.business || "—"} {lead.area ? `· ${lead.area} m²` : ""}</span></td><td>{lead.source || "MVP website"}<span>{new Date(lead.createdAt).toLocaleDateString("en-GB")}</span></td><td><select aria-label={`${tr("الحالة", "Status")} ${lead.name}`} value={lead.status} onChange={(e) => update(lead.id, e.target.value)}>{statuses.map((status) => <option key={status} value={status}>{text(status)}</option>)}</select></td></tr>)}</tbody></table></div></>; }
+
+export type LeadRow = {
+  id: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  category: string;
+  business: string | null;
+  areaSqm: number | null;
+  source: string;
+  status: string;
+  isDemo: boolean;
+  createdAt: string;
+};
+
+export type LeadDashboardProps = {
+  rows: LeadRow[];
+  counts: Record<string, number>;
+  total: number;
+  page: number;
+  pages: number;
+  status: string;
+  query: string;
+  hasDemo: boolean;
+};
+
+const statuses = ["new", "contacted", "visit_scheduled", "negotiation", "closed"] as const;
+
+export function LeadDashboard({
+  rows,
+  counts,
+  total,
+  page,
+  pages,
+  status,
+  query,
+  hasDemo,
+}: LeadDashboardProps) {
+  const { tr } = useLanguage();
+
+  const statusText = (value: string) =>
+    ({
+      new: tr("جديد", "New"),
+      contacted: tr("تم التواصل", "Contacted"),
+      visit_scheduled: tr("زيارة محددة", "Visit scheduled"),
+      negotiation: tr("تفاوض", "Negotiation"),
+      closed: tr("مغلق", "Closed"),
+    })[value] ?? value;
+
+  const labels = statuses.map((value) => ({ value, label: statusText(value) }));
+  const pageHref = (target: number) => {
+    const params = new URLSearchParams();
+    if (status) params.set("status", status);
+    if (query) params.set("q", query);
+    if (target > 1) params.set("page", String(target));
+    const suffix = params.toString();
+    return suffix ? `/admin/leads?${suffix}` : "/admin/leads";
+  };
+
+  return (
+    <>
+      <section className="dashboard-hero">
+        <div>
+          <p className="kicker">LEAD DESK</p>
+          <h1>{tr("متابعة كل استفسار\nحتى الخطوة التالية.", "Every enquiry,\nthrough to the next step.")}</h1>
+          <p>
+            {tr(
+              "استفسارات حقيقية محفوظة في قاعدة البيانات، مع سجل تغييرات للحالة.",
+              "Real enquiries stored in the database, with an audit trail for status changes.",
+            )}
+          </p>
+        </div>
+        <div className="lead-meter">
+          <span>{total}</span>
+          <p>{tr("إجمالي الاستفسارات", "total enquiries")}</p>
+        </div>
+      </section>
+
+      <div className="funnel">
+        <div className="funnel-line" />
+        {statuses.slice(0, 4).map((value) => (
+          <div key={value}>
+            <b>{counts[value] ?? 0}</b>
+            <span>{statusText(value)}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="lead-toolbar">
+        <form method="get" className="lead-filters">
+          <label>
+            {tr("ابحث", "Search")}
+            <input name="q" defaultValue={query} placeholder={tr("اسم، هاتف، بريد", "Name, phone or email")} />
+          </label>
+          <label>
+            {tr("الحالة", "Status")}
+            <select name="status" defaultValue={status}>
+              <option value="">{tr("الكل", "All")}</option>
+              {labels.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="button button-outline" type="submit">
+            {tr("تطبيق", "Apply")}
+          </button>
+          <a className="text-cta" href="/admin/leads">
+            {tr("إعادة ضبط", "Reset")}
+          </a>
+        </form>
+        <div className="lead-toolbar-actions">
+          <a className="text-cta" href="/api/admin/export">
+            {tr("تصدير CSV", "Export CSV")}
+          </a>
+          <form action={logout}>
+            <button className="text-cta" type="submit">
+              {tr("خروج", "Sign out")}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      {hasDemo && (
+        <div className="demo-banner">
+          <p>
+            {tr(
+              "توجد صفوف تجريبية مميزة بشارة Demo.",
+              "Demo rows are present and labelled with a Demo badge.",
+            )}
+          </p>
+          <form action={removeDemoLeads}>
+            <button className="text-cta" type="submit">
+              {tr("إزالة البيانات التجريبية", "Remove demo rows")}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {rows.length === 0 ? (
+        <div className="empty-state">
+          <h2>{tr("لا توجد استفسارات بعد.", "No enquiries yet.")}</h2>
+          <p>
+            {tr(
+              "ستظهر الاستفسارات هنا بمجرد إرسالها من الموقع.",
+              "Enquiries appear here as soon as they are submitted on the site.",
+            )}
+          </p>
+        </div>
+      ) : (
+        <div className="lead-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>{tr("العميل", "Lead")}</th>
+                <th>{tr("الاهتمام", "Interest")}</th>
+                <th>{tr("المصدر", "Source")}</th>
+                <th>{tr("الحالة", "Status")}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((lead) => (
+                <tr key={lead.id}>
+                  <td>
+                    <strong>
+                      {lead.name} {lead.isDemo && <em className="demo-badge">Demo</em>}
+                    </strong>
+                    <span>{lead.phone}</span>
+                    {lead.email && <span>{lead.email}</span>}
+                  </td>
+                  <td>
+                    <b>{lead.category}</b>
+                    <span>
+                      {lead.business || "—"}
+                      {lead.areaSqm ? ` · ${lead.areaSqm} m²` : ""}
+                    </span>
+                  </td>
+                  <td>
+                    {lead.source}
+                    <span>{lead.createdAt.slice(0, 10)}</span>
+                  </td>
+                  <td>
+                    <StatusSelect id={lead.id} status={lead.status} labels={labels} />
+                  </td>
+                  <td>
+                    <form
+                      action={deleteLead}
+                      onSubmit={(event) => {
+                        if (!window.confirm(tr("حذف هذا الاستفسار؟", "Delete this enquiry?"))) {
+                          event.preventDefault();
+                        }
+                      }}
+                    >
+                      <input type="hidden" name="id" value={lead.id} />
+                      <button className="row-delete" type="submit">
+                        {tr("حذف", "Delete")}
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {pages > 1 && (
+        <nav className="pagination" aria-label={tr("ترقيم الصفحات", "Pagination")}>
+          {page > 1 ? (
+            <a href={pageHref(page - 1)}>{tr("السابق", "Previous")}</a>
+          ) : (
+            <span />
+          )}
+          <span>
+            {page} / {pages}
+          </span>
+          {page < pages ? <a href={pageHref(page + 1)}>{tr("التالي", "Next")}</a> : <span />}
+        </nav>
+      )}
+    </>
+  );
+}
