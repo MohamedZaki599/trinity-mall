@@ -6,6 +6,8 @@ import { requireAdmin } from "@/lib/auth/session";
 
 const PAGE_SIZE = 25;
 
+export const instant = false;
+
 export default async function LeadsPage({
   searchParams,
 }: {

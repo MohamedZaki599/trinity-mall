@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { LoginForm } from "@/components/admin/login-form";
 import { safeAdminPath } from "@/lib/auth/session";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Team sign in",
   robots: { index: false, follow: false },
