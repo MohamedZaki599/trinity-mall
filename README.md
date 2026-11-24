@@ -23,10 +23,11 @@ Fill `.env.local`:
 1. `DATABASE_URL` — pooled Neon connection string.
 2. `DATABASE_URL_UNPOOLED` — direct connection for migrations.
 3. `ADMIN_EMAIL`.
-4. `ADMIN_PASSWORD_HASH` — generate it:
+4. `ADMIN_PASSWORD_HASH` — generate it (the script writes it into `.env.local` and verifies it):
    ```bash
-   npm run hash-password -- "your-password"
+   npm run hash-password
    ```
+   Enter the password twice when prompted. To print only, add `--print`; to pass it non-interactively, `npm run hash-password -- "your-password"`.
 5. `SESSION_SECRET` and `IP_HASH_SECRET` — random strings (32+ and 16+ characters).
 6. Resend keys and the notification inbox.
 7. `NEXT_PUBLIC_SITE_URL` — no trailing slash.

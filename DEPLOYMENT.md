@@ -39,11 +39,13 @@ Copy-Item .env.example .env.local
 
 كرر الأمر ثلاث مرات لـ `SESSION_SECRET` و`IP_HASH_SECRET` و`CRON_SECRET` (الأخير يمكن أن يكون 24 حرفًا).
 
-ولّد hash كلمة مرور الأدمن:
+ولّد hash كلمة مرور الأدمن (السكربت يسألك ويكتبه مباشرة في `.env.local` ويتحقق منه):
 
 ```powershell
-npm run hash-password -- "كلمة-مرور-قوية-وطويلة"
+npm run hash-password
 ```
+
+اكتب كلمة المرور مرتين. المتوقع: `ADMIN_PASSWORD_HASH written to .env.local (97 characters, verified).` لا تنسخ الـ hash يدويًا؛ النسخ الناقص هو أشهر سبب لرفض تسجيل الدخول.
 
 املأ `.env.local`:
 
@@ -52,7 +54,7 @@ npm run hash-password -- "كلمة-مرور-قوية-وطويلة"
 | `DATABASE_URL` | رابط Neon المجمّع |
 | `DATABASE_URL_UNPOOLED` | رابط Neon المباشر |
 | `ADMIN_EMAIL` | بريد الأدمن |
-| `ADMIN_PASSWORD_HASH` | ناتج `hash-password` |
+| `ADMIN_PASSWORD_HASH` | مكتوب تلقائيًا بواسطة `hash-password` |
 | `SESSION_SECRET` | 48 بايت عشوائية |
 | `IP_HASH_SECRET` | 48 بايت عشوائية |
 | `RESEND_API_KEY` | من لوحة Resend |
@@ -191,3 +193,4 @@ $env:DATABASE_URL_UNPOOLED="رابط-الإنتاج-المباشر"; npm run db:
 - لا تشارك `ADMIN_PASSWORD_HASH` أو المفاتيح في المحادثات.
 - نسخ Neon الاحتياطية: فعّل Point-in-Time Restore (RPO المستهدف 24 ساعة).
 - لتغيير كلمة مرور الأدمن: ولّد hash جديدًا وحدّث المتغير في Vercel ثم أعد النشر.
+- إذا رُفض تسجيل الدخول رغم صحة البريد: تحقق أن `ADMIN_PASSWORD_HASH` طوله **97** حرفًا وبصيغة `$argon2id$v=19$m=...`. الـ hash المقتطع يُرفض دائمًا؛ أعد توليده بـ `npm run hash-password` ثم حدّث Vercel وأعد النشر.

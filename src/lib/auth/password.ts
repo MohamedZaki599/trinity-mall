@@ -6,7 +6,9 @@ export async function verifyAdminPassword(password: string): Promise<boolean> {
   if (!password) return false;
   try {
     return await verify(env().ADMIN_PASSWORD_HASH, password);
-  } catch {
+  } catch (error) {
+    // Distinguishes a malformed hash from a wrong password in the runtime logs.
+    console.error("admin_password_verify_failed", error instanceof Error ? error.message : "unknown");
     return false;
   }
 }
